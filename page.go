@@ -28,8 +28,8 @@ const (
 type pgid uint64
 
 type page struct {
-	id       pgid
-	flags    uint16
+	id       pgid   // 页号
+	flags    uint16 // 页类型：分支、叶子、元信息、空闲列表
 	count    uint16
 	overflow uint32
 	ptr      uintptr
