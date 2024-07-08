@@ -972,6 +972,8 @@ type meta struct {
 	version  uint32
 	pageSize uint32
 	flags    uint32
+	// 根bucket（包含页号+bucket编号）,存放Bucket B-tree的root，该B-tree的叶子存放：...|bucket1|root|sequence||bucket2|root|sequence||...,root分别指向存储bucket1和bucket2里KV的B-tree的root,
+	// 对Bucket里任何一个key的增删查改操作都要从这个root开始查找。
 	root     bucket
 	freelist pgid
 	pgid     pgid
