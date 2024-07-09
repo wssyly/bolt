@@ -9,15 +9,15 @@ import (
 
 // node represents an in-memory, deserialized page.
 type node struct {
-	bucket     *Bucket
-	isLeaf     bool
-	unbalanced bool
-	spilled    bool
-	key        []byte
-	pgid       pgid
-	parent     *node
-	children   nodes
-	inodes     inodes
+	bucket     *Bucket // 该node所属的bucket指针。
+	isLeaf     bool    // 当前node是否为叶子节点。
+	unbalanced bool    //	当前node是否可能不平衡。
+	spilled    bool    // 当前node是否已被调整过。
+	key        []byte  // 保存node初始化时的第一个key，用于在调整时索引。
+	pgid       pgid    // 当前node在mmap内存中相应的页id
+	parent     *node   // 父节点指针
+	children   nodes   // 保存已实例化的孩子节点的node，用于spill时递归向下更新node。type nodes []*node
+	inodes     inodes  // 该node的内部节点，即该node所包含的元素。type inodes []inode
 }
 
 // root returns the top-level node this node is attached to.
@@ -587,9 +587,11 @@ func (n *node) dump() {
 
 type nodes []*node
 
-func (s nodes) Len() int           { return len(s) }
-func (s nodes) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s nodes) Less(i, j int) bool { return bytes.Compare(s[i].inodes[0].key, s[j].inodes[0].key) == -1 }
+func (s nodes) Len() int      { return len(s) }
+func (s nodes) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s nodes) Less(i, j int) bool {
+	return bytes.Compare(s[i].inodes[0].key, s[j].inodes[0].key) == -1
+}
 
 // inode represents an internal node inside of a node.
 // It can be used to point to elements in a page or point
